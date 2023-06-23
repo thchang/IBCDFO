@@ -21,7 +21,7 @@ coeffs = [1e-6 0.5 1e-6 0.5 0.5 0.5 0.5];
 
 if nargin == 1
     zk = z;
-    zk(2:p) = max(zk(2:p),0).^2;     
+    zk(2:p) = max(zk(2:p), 0).^2;
     h = dot(coeffs, zk);
 
     zero_inds = 1 + find(zk(2:end) < eqtol);
@@ -30,23 +30,23 @@ if nargin == 1
     fun_inds = intersect(zero_inds, active_inds);
 
     if ~isempty(fun_inds)
-        error('a')
+        error('a');
     end
 
     g = cell(p, 1);
     H = cell(p, 1);
 
-    g{1}(1) = 0; % gradient of first component is zero 
-    H{1}(1) = {'0'}; % Hash of first component is zero 
+    g{1}(1) = 0; % gradient of first component is zero
+    H{1}(1) = {'0'}; % Hash of first component is zero
 
     for i = 2:p
         lg = 0;
-        if ismember(i,active_inds)
+        if ismember(i, active_inds)
             lg = lg + 1;
-            g{i}(lg) = 2*coeffs(i)*z(i);
+            g{i}(lg) = 2 * coeffs(i) * z(i);
             H{i}(lg) = {'1'};
         end
-        if ismember(i,zero_inds)
+        if ismember(i, zero_inds)
             lg = lg + 1;
             g{i}(lg) = 0;
             H{i}(lg) = {'0'};
@@ -66,21 +66,21 @@ elseif nargin == 2
     h = zeros(1, J);
     grads = zeros(p, J);
     vals = zeros(p, J);
-  
+
     for j = 1:J
-        vals(1,j) = coeffs(1)*z(1);
+        vals(1, j) = coeffs(1) * z(1);
         for i = 2:p
             switch H0{j}(i)
                 case '0'
-                    vals(i,j) = 0;
-                    grads(i,j) = 0;
+                    vals(i, j) = 0;
+                    grads(i, j) = 0;
                 case '1'
 %                     assert(z(i)> 0, "why not?")
-                    vals(i,j) = coeffs(i)*z(i)^2;
-                    grads(i,j) = 2*coeffs(i)*z(i);
+                    vals(i, j) = coeffs(i) * z(i)^2;
+                    grads(i, j) = 2 * coeffs(i) * z(i);
             end
         end
-        h(j) = sum(vals(:,j));
+        h(j) = sum(vals(:, j));
     end
 
 else
