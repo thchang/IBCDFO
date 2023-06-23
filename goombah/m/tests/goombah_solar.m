@@ -3,6 +3,7 @@ trsp_root = [root_dir 'goombah/m/subproblems/'];
 addpath(trsp_root);
 addpath('../../../manifold_sampling/m/h_examples/');
 addpath('../');
+addpath('../../../pounders/m/');
 addpath('../../../manifold_sampling/m/tests/');
 addpath('../../../manifold_sampling/m/');
 
