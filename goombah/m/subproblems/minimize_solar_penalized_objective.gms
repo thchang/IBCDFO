@@ -1,0 +1,144 @@
+* Solve the problem:
+*
+*       minimize c_1 M_1(x) + sum_i=2^7 c_i * max(M_i,0)^2
+*         s.t.   Low <= (x - x0) <= Upp
+*
+* where M is a defined by 7 quadratics mapping from R^5 (0.5*(x - x0)^T * H_p * (x - x0) + g_p * (x - x0) + c_p)
+
+SETS
+  N   'elements of x'
+  P   'set of quadratic models'
+;
+
+Alias(N, M)
+
+PARAMETERS
+H(N, M, P)  'Model quadratic terms'
+g(N, P)     'Model linear terms'
+b(P)        'Model constant terms'
+solver      'Flag for solver'
+x0(N)       'Trust region center'
+x1(N)       'Candidate starting point for TRSP'
+Low(N)      'Lower bound on step'
+Upp(N)      'Upper bound on step'
+dsc(N)      'automatic scaling factor for d := x - x0'
+gamma(N)    'manual scaling factor for d := x - x0'
+coeffs(P)
+;
+
+coeffs = 0.5;
+coeffs('1') = 1e-6;
+coeffs('3') = 1e-6;
+
+$if NOT exist quad_model_data.gdx $abort File quad_model_data.gdx does not exist: run the calling script from Matlab to create it.
+$gdxin quad_model_data.gdx
+$load N P H g b x0 x1 solver Low Upp
+$gdxin
+
+VARIABLES
+  tau     Objective value
+  x(N)    decision
+  d(N)    'd := (x - x0) / dsc, i.e. d * dsc := (x - x0)'
+  m_F(P)  value of each quadratic
+
+option decimals=8;
+
+* Declare model equations
+EQUATIONS
+obj                     Objective
+each_model
+;
+
+* Define model equations
+obj..               tau =e= coeffs('1')*m_F('1') + sum(P$(ORD(P)>=1), coeffs(P)*power(max(m_F(P), 0), 2));
+
+each_model(P)..     m_F(P) =e= 0.5*sum{(N, M), (d(N)*gamma(N))*H(N, M, P)*(d(M)*gamma(N))} + sum{N, g(N, P)*d(N)*gamma(N)} + b(P);
+
+model TRSP / ALL /;
+
+dsc(N) = 1;
+gamma(N) = max[abs(low(N)),abs(upp(N))];
+
+$ifthen set AUTOSCALE
+  dsc(N) = gamma(N);
+  gamma(N) = 1;
+  TRSP.scaleopt = 1;
+$endif
+
+d.lo(N) = Low(N) / gamma(N);
+d.up(N) = Upp(N) / gamma(N);
+
+x.l(N) = x0(N);
+d.l(N) = 0;
+d.scale(N) = dsc(N);
+m_F.l(P) = b(P);
+tau.l = smin(P, m_F.l(P));
+
+option limrow = 1000;
+option limcol = 1000;
+option Optca = 0;
+option Optcr = 0;
+option reslim = 30;
+
+* display x0;
+* display scale;
+* display Q;
+* display z;
+* display b;
+* display H;
+* display g;
+* display c;
+* display 'lastly, ', tau.l;
+* display 'lastly, ', m_F.l;
+
+TRSP.optfile = 1;
+TRSP.trylinear = 1;
+
+$onecho > minos.opt
+Feasibility tolerance  0
+Optimality  tolerance  0
+$offecho
+
+* option DNLP=LINDOGLOBAL;
+* option DNLP=CONOPT;
+* option DNLP=couenne;
+* option DNLP=mosek;
+* option DNLP=minos;
+* option DNLP=examiner;
+* option DNLP=snopt;
+
+if (solver = 1,
+  option DNLP=conopt;
+);
+if (solver = 2,
+$onecho > minos.opt
+$offecho
+  option DNLP=minos;
+);
+if (solver = 3,
+$onecho > snopt.opt
+$offecho
+  option DNLP=snopt;
+);
+
+SOLVE TRSP MINIMIZING tau USING DNLP;
+
+scalars modelStat, solveStat;
+modelStat = TRSP.modelstat;
+solveStat = TRSP.solvestat;
+
+parameters
+  Nerr(N)
+  xd(N)    'x - x0'
+  rdelta
+  ;
+xd(N) = d.L(N)*gamma(N);
+Nerr(N) = max(0, Low(N) - xd(N));
+* abort$[sum{N, Nerr(N)}] 'x-x0 < Low', Nerr;
+Nerr(N) = max(0, xd(N)-Upp(N));
+* abort$[sum{N, Nerr(N)}] 'x-x0 > Upp', Nerr;
+
+m_F.L(P) = 0.5*sum{(N, M), xd(N)*H(N, M, P)*xd(M)} + sum{N, g(N, P)*xd(N)} + b(P);
+
+x.L(N) = x0(N) + xd(N);
+execute_unload 'solution', modelStat, solveStat, x, tau, m_F;
