@@ -2,6 +2,7 @@ import numpy as np
 import sys, os
 from subprocess import run, PIPE
 
+
 def call_solar(x):
     print(x)
     database = "solar_10_database.npy"
@@ -15,17 +16,16 @@ def call_solar(x):
                 match = 1
                 break
 
-
     if match == 0:
-        np.savetxt('./x.txt', x, fmt='%16.16f', delimiter=' ', newline=" ")
-        command = ['./solar', '10', 'x.txt', '-v']
+        np.savetxt("./x.txt", x, fmt="%16.16f", delimiter=" ", newline=" ")
+        command = ["./solar", "10", "x.txt", "-v"]
         # print(command)
         result = run(command, stdout=PIPE, stderr=PIPE, text=True)
         # print(result)
         # print(result.stdout)
         # print(result.stderr)
         intermediate_output = result.stdout.splitlines()[-2]
-        vecout = np.array([float(i) for i in intermediate_output.split(' ')[-7:]])
+        vecout = np.array([float(i) for i in intermediate_output.split(" ")[-7:]])
 
         to_save = {"vecout": vecout, "var_vals": x}
         DB = np.append(DB, to_save)
@@ -42,7 +42,8 @@ def call_solar(x):
 
     return output
 
-if __name__ == "__main__": 
+
+if __name__ == "__main__":
     x = np.array([float(i) for i in sys.argv[1:]])
     output = call_solar(x)
-    np.savetxt('vecout.out', output)
+    np.savetxt("vecout.out", output)

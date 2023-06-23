@@ -1,4 +1,4 @@
-import sys,os
+import sys, os
 
 import ibcdfo.pounders as pdrs
 import numpy as np
@@ -6,6 +6,7 @@ from calFun import calFun
 from subprocess import run, PIPE
 
 sys.path.append("../../../../minq/py/minq5/")  # Needed for spsolver=2
+
 
 def call_solar(x):
     database = "solar_10_database.npy"
@@ -19,27 +20,27 @@ def call_solar(x):
                 match = 1
                 break
 
-
     if match == 0:
-        np.savetxt('./x.txt', x, fmt='%16.16f', delimiter=' ', newline=" ")
-        command = ['./solar', '10', 'x.txt', '-v']
+        np.savetxt("./x.txt", x, fmt="%16.16f", delimiter=" ", newline=" ")
+        command = ["./solar", "10", "x.txt", "-v"]
         result = run(command, stdout=PIPE, stderr=PIPE, text=True)
         intermediate_output = result.stdout.splitlines()[-2]
-        vecout = np.array([float(i) for i in intermediate_output.split(' ')[-7:]])
+        vecout = np.array([float(i) for i in intermediate_output.split(" ")[-7:]])
 
         to_save = {"vecout": vecout, "var_vals": x}
         DB = np.append(DB, to_save)
         np.save(database, DB)
 
     vecout[0] = np.sqrt(vecout[0])
-    coeffs = np.append([1e-6], 0.5*np.ones((1,6)))
+    coeffs = np.append([1e-6], 0.5 * np.ones((1, 6)))
     coeffs[2] *= 2e-6
     coeffs = np.sqrt(coeffs)
-    output = np.maximum(vecout*coeffs,0)
+    output = np.maximum(vecout * coeffs, 0)
 
     print(np.sum(output**2))
 
     return output
+
 
 # Sample calling syntax for pounders
 # func is a function imported from calFun.py as calFun
@@ -60,13 +61,13 @@ nfs = 1
 # m [int] number of residuals
 m = 7
 # F0 [dbl] [fstart-by-1] Set of known function values  ([])
-F0 = np.zeros((1,7))
+F0 = np.zeros((1, 7))
 # xind [int] Index of point in X0 at which to start from (1)
 xind = 0
 # Low [dbl] [1-by-n] Vector of lower bounds (-Inf(1,n))
-Low = np.array([ 793.0,  2.0,  2.0, 0.01, 0.01 ])
+Low = np.array([793.0, 2.0, 2.0, 0.01, 0.01])
 # Upp [dbl] [1-by-n] Vector of upper bounds (Inf(1,n))
-Upp = np.array([ 995.0, 50.0, 30.0, 5.00, 5.00 ])
+Upp = np.array([995.0, 50.0, 30.0, 5.00, 5.00])
 # printf [log] 1 Indicates you want output to screen (1)
 printf = True
 spsolver = 2
@@ -75,4 +76,4 @@ F0[0, :] = func(X0)
 
 [X, F, flag, xkin] = pdrs.pounders(func, X0, n, mpmax, nfmax, gtol, delta, nfs, m, F0, xind, Low, Upp, printf, spsolver)
 
-print(np.sum(F**2,axis=1))
+print(np.sum(F**2, axis=1))
