@@ -24,7 +24,8 @@ function [nf, X, F, h, Hash, hashes_at_nf] = call_user_scripts(nf, X, F, h, Hash
     X(nf, :) = xnew;
     F(nf, :) = Ffun(X(nf, :));
     [h(nf), ~, hashes_at_nf] = hfun(F(nf, :));
-    Hash(nf, 1:length(hashes_at_nf)) = hashes_at_nf;
+    len_hashes = length(hashes_at_nf);
+    Hash(nf, 1:len_hashes) = hashes_at_nf;
 
     assert(~any(isnan(F(nf, :))), 'Got a NaN. FAIL!');
 
@@ -37,6 +38,9 @@ function [nf, X, F, h, Hash, hashes_at_nf] = call_user_scripts(nf, X, F, h, Hash
         assert(all(cellfun(@ischar, hashes_at_nf)), "Hashes must be character arrays");
 
         [h_dummy1, grad_dummy1, hash_dummy] = hfun(F(nf, :));
+        assert(size(grad_dummy1, 1) == size(F,2), "The number of rows in the gradient output from hfun is incorrect");
+        assert(size(grad_dummy1, 2) == len_hashes, "The number of columns in the gradient output from hfun is incorrect");
+
         [h_dummy2, grad_dummy2] = hfun(F(nf, :), hash_dummy);
         assert(any(h_dummy1 == h_dummy2), "hfun values don't agree when being re-called with the same inputs");
         assert(all(all(grad_dummy1 == grad_dummy2)), "hfun gradients don't agree when being re-called with the same inputs");

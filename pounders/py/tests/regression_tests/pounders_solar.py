@@ -51,7 +51,7 @@ n = 5
 X0 = np.array([900.0, 10.0, 12.0, 0.20, 0.20])
 mpmax = int(0.5 * (n + 1) * (n + 2))
 # nfmax [int] Maximum number of function evaluations (>n+1) (100)
-nfmax = 50
+nfmax = 200
 # gtol [dbl] Tolerance for the 2-norm of the model gradient (1e-4)
 gtol = 10**-13
 # delta [dbl] Positive trust region radius (.1)

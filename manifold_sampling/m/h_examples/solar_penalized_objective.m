@@ -17,15 +17,15 @@ function [h, grads, Hash] = solar_penalized_objective(z, H0)
 
 z = z(:);
 p = length(z);
-eqtol = 1e-4;
 
-coeffs = [1e-6 0.5 2e-12 0.5 0.5 0.5 0.5];
+% coeffs = [1e-6 0.5 2e-12 0.5 0.5 0.5 0.5]';
+coeffs = ones(p, 1);
 
 zk = z;
 zk(2:p) = max(zk(2:p), 0).^2;
 h = dot(coeffs, zk);
 
-grads = 2 * coeffs * zk;
+grads = 2 * coeffs .* zk;
 grads(1) = 0; % gradient of first component is zero
 
 if nargin == 1

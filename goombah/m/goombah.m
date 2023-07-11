@@ -187,7 +187,8 @@ function [X, F, h, xkin] = goombah(hfun, Ffun, nfmax, x0, L, U, GAMS_options, su
             end
 
         end
-        fprintf('nf: %8d; fval: %8e; radius: %8e; \n', nf, h(xkin), delta);
+        [~,argmin] = min(h(1:nf));
+        fprintf('nf: %8d; fval: %8e; radius: %8e; xkin: %8d; best: %8d\n', nf, h(xkin), delta, xkin, argmin);
     end
 
     if nf >= nfmax

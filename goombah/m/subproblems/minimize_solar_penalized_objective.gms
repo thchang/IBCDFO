@@ -23,23 +23,25 @@ Low(N)      'Lower bound on step'
 Upp(N)      'Upper bound on step'
 dsc(N)      'automatic scaling factor for d := x - x0'
 gamma(N)    'manual scaling factor for d := x - x0'
-coeffs(P)
+* coeffs(P)
 ;
-
-coeffs = 0.5;
-coeffs('1') = 1e-6;
-coeffs('3') = 1e-6;
 
 $if NOT exist quad_model_data.gdx $abort File quad_model_data.gdx does not exist: run the calling script from Matlab to create it.
 $gdxin quad_model_data.gdx
 $load N P H g b x0 x1 solver Low Upp
 $gdxin
 
+* coeffs(P) = 0.5;
+* coeffs('1') = 1e-6;
+* coeffs('3') = 2e-12;
+* coeffs(P) = 1;
+
 VARIABLES
   tau     Objective value
   x(N)    decision
   d(N)    'd := (x - x0) / dsc, i.e. d * dsc := (x - x0)'
   m_F(P)  value of each quadratic
+  max_zero_and_m_F(P)
 
 option decimals=8;
 
@@ -47,10 +49,16 @@ option decimals=8;
 EQUATIONS
 obj                     Objective
 each_model
+max_of_zero_and_model_a
+max_of_zero_and_model_b
 ;
 
 * Define model equations
-obj..               tau =e= coeffs('1')*m_F('1') + sum(P$(ORD(P)>=1), coeffs(P)*power(max(m_F(P), 0), 2));
+* obj..               tau =e= coeffs('1')*m_F('1') + sum(P$(ORD(P)>=2), coeffs(P)*power(max(m_F(P), 0), 2));
+obj..               tau =e= m_F('1') + sum(P$(ORD(P)>=2), power(max_zero_and_m_F(P), 2));
+
+max_of_zero_and_model_a(P).. max_zero_and_m_F(P) =g= m_F(P); 
+max_of_zero_and_model_b(P).. max_zero_and_m_F(P) =g= 0; 
 
 each_model(P)..     m_F(P) =e= 0.5*sum{(N, M), (d(N)*gamma(N))*H(N, M, P)*(d(M)*gamma(N))} + sum{N, g(N, P)*d(N)*gamma(N)} + b(P);
 
@@ -72,7 +80,7 @@ x.l(N) = x0(N);
 d.l(N) = 0;
 d.scale(N) = dsc(N);
 m_F.l(P) = b(P);
-tau.l = smin(P, m_F.l(P));
+max_zero_and_m_F.l(P) = max(b(P),0);
 
 option limrow = 1000;
 option limcol = 1000;
@@ -89,7 +97,7 @@ option reslim = 30;
 * display g;
 * display c;
 * display 'lastly, ', tau.l;
-* display 'lastly, ', m_F.l;
+* display 'lastly, ', coeffs;
 
 TRSP.optfile = 1;
 TRSP.trylinear = 1;
@@ -108,7 +116,7 @@ $offecho
 * option DNLP=snopt;
 
 if (solver = 1,
-  option DNLP=conopt;
+  option DNLP=baron;
 );
 if (solver = 2,
 $onecho > minos.opt

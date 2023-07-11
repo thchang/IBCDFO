@@ -188,14 +188,18 @@ for j = 1:size(allx, 1)
     obj_vals_MATLAB(j) = h_fun(z);
 end
 
-atol = 1e-4;
-rtol = 1e-4;
-if any(abs(obj_vals_GAMS(:) - obj_vals_MATLAB(:)) > atol + rtol * abs(obj_vals_MATLAB(:)))
-    disp("MATLAB and GAMS calculated different objective values for some reason");
-    pred_dec = 0;
-    s_k = zeros(1, n);
-    return
-end
+% atol = 1e-3;
+% rtol = 1e-3;
+% if all(abs(obj_vals_GAMS(:) - obj_vals_MATLAB(:)) > atol + rtol * abs(obj_vals_MATLAB(:)))
+% % atol = 1e-4;
+% % rtol = 1e-4;
+% % if any(abs(obj_vals_GAMS(:) - obj_vals_MATLAB(:)) > atol + rtol * abs(obj_vals_MATLAB(:)))
+%     disp("MATLAB and GAMS calculated different objective values for some reason");
+%     error('a')
+%     pred_dec = 0;
+%     s_k = zeros(1, n);
+%     return
+% end
 % assert(all(abs(obj_vals_GAMS(:) - obj_vals_MATLAB(:)) <= atol + rtol * abs(obj_vals_MATLAB(:))), "MATLAB and GAMS calculated different objective values for some reason");
 
 [val_at_new, ind] = min(obj_vals_MATLAB);

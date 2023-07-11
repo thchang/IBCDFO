@@ -7,15 +7,31 @@ addpath('../../../pounders/m/');
 addpath('../../../manifold_sampling/m/tests/');
 addpath('../../../manifold_sampling/m/');
 
+mkdir('../benchmark_results');
+
+x0s = load('x0_LH30.txt');
+
 hfun = @solar_penalized_objective;
 Ffun = @call_solar_from_matlab;
-x0 = [900.0, 10.0, 12.0, 0.20, 0.20];
 LB = [793.0,  2.0,  2.0, 0.01, 0.01];
 UB = [995.0, 50.0, 30.0, 5.00, 5.00];
-nfmax = 60;
+nfmax = 500;
 subprob_switch = 'linprog';
 
 GAMS_options.file = [trsp_root 'minimize_solar_penalized_objective.gms'];
-GAMS_options.solvers = 1:3;
+GAMS_options.solvers = 1;
 
-[X, F, h, xkin] = goombah(hfun, Ffun, nfmax, x0, LB, UB, GAMS_options, subprob_switch);
+for i = 1:30
+    filename = ['../benchmark_results/prob=' int2str(i) '.mat'];
+
+    if exist(filename, 'file')
+        continue
+    end
+    system(['touch ' filename]);
+
+    x0 = x0s(i,:);
+
+    [X, F, h, xkin] = goombah(hfun, Ffun, nfmax, x0, LB, UB, GAMS_options, subprob_switch);
+
+    save(filename, "X", "F", "h")
+end

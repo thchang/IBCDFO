@@ -31,11 +31,16 @@ def call_solar(x):
         DB = np.append(DB, to_save)
         np.save(database, DB)
 
-    output = vecout
-    print(vecout)
-    # vecout[0] = np.sqrt(vecout[0])
-    # coeffs = np.append([1e-6], 0.5*np.ones((1,6)))
-    # coeffs[2] *= 2e-6
+    coeffs = np.append([1e-6], 0.5*np.ones((1,6)))
+    coeffs[2] *= 2e-6
+
+    # FOR GOOMBAH
+    coeffs = np.sqrt(coeffs)
+    coeffs[0] = 1e-6
+    output = coeffs*vecout
+
+    # # FOR POUNDERS
+    # coeffs[0] = 1e-6
     # coeffs = np.sqrt(coeffs)
     # output = np.maximum(vecout*coeffs,0)
     # print(np.sum(output**2))
