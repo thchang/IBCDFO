@@ -1,9 +1,12 @@
 import numpy as np
 from ibcdfo.pounders import general_h_funs, pounders
+import subprocess
 
 
 def call_beamline_simulation(x):
     print("I am running my simulation with parameters", x)
+    subprocess.call("./a.out", shell=True)
+
 
     # In here, put your call to your simulation that takes in the
     # parameters x and returns the three values used in the calculation of
