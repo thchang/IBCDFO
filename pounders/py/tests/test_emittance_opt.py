@@ -3,6 +3,8 @@ from ibcdfo.pounders import general_h_funs, pounders
 
 
 def call_beamline_simulation(x):
+    print("I am running my simulation with parameters", x)
+
     # In here, put your call to your simulation that takes in the
     # parameters x and returns the three values used in the calculation of
     # emittance.
