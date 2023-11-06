@@ -6,5 +6,7 @@ int main()
   std::cout << "There are lots of ways executables might print to screen\n";
   printf("Are they all easy to catch?\n");
   system("echo What about this?\n");
+  std::cerr << "Something ghastly occured in C++ land" << std::endl;
+
   return 0;
 }

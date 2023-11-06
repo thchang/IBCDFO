@@ -11,7 +11,19 @@ from importlib.metadata import version
 
 __version__ = version("ibcdfo")
 
+# constants
+from .constants import (
+    LOG_LEVEL_NONE, LOG_LEVEL_BASIC, LOG_LEVEL_BASIC_DEBUG,
+    LOG_LEVEL_MAX,
+    LOG_LEVELS
+)
+
+# functions
 from . import manifold_sampling, pounders
+
+# classes
+from .AbcLogger import AbcLogger
+from .BasicLogger import BasicLogger
 
 # ----- Python unittest-based test framework
 # Used for automatic test discovery

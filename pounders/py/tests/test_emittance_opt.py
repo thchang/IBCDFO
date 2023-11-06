@@ -1,12 +1,112 @@
 import numpy as np
 from ibcdfo.pounders import general_h_funs, pounders
+
+import io
+import sys
+from ibcdfo import (
+    LOG_LEVEL_NONE, LOG_LEVEL_BASIC, LOG_LEVEL_BASIC_DEBUG,
+    BasicLogger
+)
 import subprocess
+from contextlib import (
+    contextmanager, redirect_stdout
+)
+
+
+
+def run_and_log_subprocess(cmd, logger, log_tag, log_level):
+    """
+    .. todo::
+        * This should error check the subprocess command itself and respond
+          appropriately to difficulties
+    """
+    result = subprocess.run(cmd, capture_output=True)
+
+    # Log empty lines as that might be the developer's intention
+    for line in result.stdout.decode().split("\n"):
+        logger.log(log_tag, line, log_level)
+
+    # No need for empty error messages
+    result_stderr = result.stderr.decode().split("\n")
+    result_stderr = [line for line in result_stderr if line != ""]
+    for line in result_stderr:
+        logger.error(log_tag, line)
+    if result_stderr:
+        raise RuntimeError(f"Failure running subprocess command - {cmd}")
+
+
+@contextmanager
+def run_and_log_pyminq(logger, log_level):
+    """
+    NOT CLEAR IF THIS IS A GOOD IDEA!
+
+    From the contextlib.redirect_stdout documentation:
+        Note that the global side effect on sys.stdout means that this context
+        manager is not suitable for use in library code and most threaded
+        applications. It also has no effect on the output of subprocesses.
+        However, it is still a useful approach for many utility scripts.
+    """
+    LOG_TAG = "PyMINQ"
+
+    try:
+        with redirect_stdout(io.StringIO()) as msg:
+            yield
+    except Exception as e:
+        # Log all stdout generated so far to aid in debugging
+        for line in msg.getvalue().split("\n"):
+            logger.log(LOG_TAG, line, log_level)
+        raise RuntimeError(e)
+
+    for line in msg.getvalue().split("\n"):
+        logger.log(LOG_TAG, line, log_level)
+
+
+def pyminq(x):
+    print(f"PyMINQ x arguments - {x}")
+    print("")
+    print("I will now pretent to do something")
+    print("")
+    raise NotImplementedError("This functionality does not exist")
 
 
 def call_beamline_simulation(x):
-    print("I am running my simulation with parameters", x)
-    subprocess.call("./a.out", shell=True)
+    LOG_TAG = "IBCDFO Test"
+    # Uncomment to see no logging at all
+    # logger = BasicLogger(LOG_LEVEL_NONE)
+    # Uncomment to see default logging
+    logger = BasicLogger(LOG_LEVEL_BASIC)
+    # Uncomment to see minimal debug logging
+    # logger = BasicLogger(LOG_LEVEL_BASIC_DEBUG)
 
+    logger.log(LOG_TAG, "", LOG_LEVEL_BASIC)
+    logger.log(
+        LOG_TAG, "Let's love lively logging lessons",
+        LOG_LEVEL_BASIC_DEBUG
+    )
+    logger.log(LOG_TAG, "-" * 80, LOG_LEVEL_BASIC_DEBUG)
+    msg = f"I am running my simulation with parameters {x}"
+    logger.log(LOG_TAG, msg, LOG_LEVEL_BASIC)
+
+    # Run a command with subprocess
+    #
+    # I would put the try/except block at one of the highest levels of the
+    # application.
+    try:
+        run_and_log_subprocess(["./a.out"], logger, "Jeff/C++", LOG_LEVEL_BASIC)
+    except Exception as e:
+        logger.error(LOG_TAG, e)
+        #exit(1)
+    logger.log(LOG_TAG, "", LOG_LEVEL_BASIC)
+
+    # Run a command that we have direct access to but have no logging control
+    # over
+    try:
+        with run_and_log_pyminq(logger, LOG_LEVEL_BASIC):
+            pyminq(x)
+    except Exception as e:
+        logger.error("PyMINQ", e)
+        exit(1)
+    logger.log(LOG_TAG, "", LOG_LEVEL_BASIC)
 
     # In here, put your call to your simulation that takes in the
     # parameters x and returns the three values used in the calculation of
