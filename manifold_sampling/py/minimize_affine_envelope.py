@@ -2,7 +2,6 @@ import numpy as np
 from scipy.optimize import linprog
 
 
-@profile
 def minimize_affine_envelope(f, f_bar, beta, G_k, H, delta, Low, Upp, H_k, subprob_switch):
 
     n, p = G_k.shape

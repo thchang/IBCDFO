@@ -44,15 +44,14 @@
 import numpy as np
 from ibcdfo.pounders import checkinputss
 
-from build_p_models import build_p_models, build_p_models2
-from call_user_scripts import call_user_scripts, call_user_scripts2
-from check_inputs_and_initialize import check_inputs_and_initialize, check_inputs_and_initialize2
-from choose_generator_set import choose_generator_set
-from minimize_affine_envelope import minimize_affine_envelope
-from prepare_outputs_before_return import prepare_outputs_before_return
+from .build_p_models import build_p_models, build_p_models2
+from .call_user_scripts import call_user_scripts, call_user_scripts2
+from .check_inputs_and_initialize import check_inputs_and_initialize, check_inputs_and_initialize2
+from .choose_generator_set import choose_generator_set
+from .minimize_affine_envelope import minimize_affine_envelope
+from .prepare_outputs_before_return import prepare_outputs_before_return
 
 
-@profile
 def manifold_sampling_primal(hfun, Ffun, x0, L, U, nfmax, subprob_switch, Gfun=None):
     # Deduce p from evaluating Ffun at x0
     try:
